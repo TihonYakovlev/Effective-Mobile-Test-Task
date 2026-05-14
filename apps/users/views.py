@@ -2,25 +2,36 @@ from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from django.utils import timezone
 
 from apps.users.serializers import LoginSerializer, RegisterSerializer, UserProfileSerializer
 from apps.users.services import login_user, logout_by_payload, register_user
+from config.settings import TIME_ZONE
+
 
 
 class MeView(APIView):
-    permission_classes = [IsAuthenticated]
-
     def get(self, request):
-        return Response(
-            {
-                "id": request.user.id,
-                "email": request.user.email,
-                "first_name": request.user.first_name,
-                "last_name": request.user.last_name,
-                "middle_name": request.user.middle_name,
-            }
-        )
+        return Response(UserProfileSerializer(request.user).data)
 
+    def patch(self, request):
+        serializer = UserProfileSerializer(
+            request.user,
+            data=request.data,
+            partial=True,
+        )
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)
+
+    def delete(self, request):
+        request.user.is_active = False
+        request.user.deleted_at = TIME_ZONE.now()
+        request.user.save(update_fields=["is_active", "deleted_at", "updated_at"])
+        request.user.sessions.filter(revoked_at__isnull=True).update(
+            revoked_at=timezone.now()
+        )
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 class RegisterView(APIView):
     authentication_classes = []
