@@ -25,3 +25,23 @@ class User(models.Model):
 
     def __str__(self) -> str:
         return self.email
+
+
+class AuthSession(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="sessions")
+    token_jti = models.UUIDField(unique=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField()
+    revoked_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        db_table = "auth_sessions"
+        indexes = [
+            models.Index(fields=["token_jti"]),
+            models.Index(fields=["user", "revoked_at"]),
+        ]
+
+    @property
+    def is_active(self) -> bool:
+        return self.revoked_at is None
