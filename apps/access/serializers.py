@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from apps.access.models import AccessRule, BusinessElement, Role, UserRole
+from apps.access.models import AccessRule, BusinessElement, Role
 
 
 class RoleSerializer(serializers.ModelSerializer):

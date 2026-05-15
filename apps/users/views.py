@@ -1,16 +1,16 @@
+from django.utils import timezone
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from django.utils import timezone
 
 from apps.users.serializers import LoginSerializer, RegisterSerializer, UserProfileSerializer
 from apps.users.services import login_user, logout_by_payload, register_user
-from config.settings import TIME_ZONE
-
 
 
 class MeView(APIView):
+    permission_classes = [IsAuthenticated]
+
     def get(self, request):
         return Response(UserProfileSerializer(request.user).data)
 
@@ -26,12 +26,13 @@ class MeView(APIView):
 
     def delete(self, request):
         request.user.is_active = False
-        request.user.deleted_at = TIME_ZONE.now()
+        request.user.deleted_at = timezone.now()
         request.user.save(update_fields=["is_active", "deleted_at", "updated_at"])
         request.user.sessions.filter(revoked_at__isnull=True).update(
             revoked_at=timezone.now()
         )
         return Response(status=status.HTTP_204_NO_CONTENT)
+
 
 class RegisterView(APIView):
     authentication_classes = []
@@ -42,7 +43,7 @@ class RegisterView(APIView):
         serializer.is_valid(raise_exception=True)
         user = register_user(serializer.validated_data)
         return Response(UserProfileSerializer(user).data, status=status.HTTP_201_CREATED)
-    
+
 
 class LoginView(APIView):
     authentication_classes = []

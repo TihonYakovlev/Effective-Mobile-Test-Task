@@ -11,10 +11,17 @@ from apps.access.serializers import (
 
 class AdminAccessMixin:
     element_code = "access_rules"
+    action_by_method = {
+        "GET": "read",
+        "POST": "create",
+        "PUT": "update",
+        "PATCH": "update",
+        "DELETE": "delete",
+    }
 
     def initial(self, request, *args, **kwargs):
         super().initial(request, *args, **kwargs)
-        action = "read" if request.method == "GET" else "update"
+        action = self.action_by_method[request.method]
         require_access(request, self.element_code, action)
 
 
