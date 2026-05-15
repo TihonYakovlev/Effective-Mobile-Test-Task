@@ -31,7 +31,7 @@ class Command(BaseCommand):
             },
             "user": {
                 "name": "User",
-                "description": "Default registered userr",
+                "description": "Default registered user",
             },
         }
 
@@ -78,19 +78,19 @@ class Command(BaseCommand):
     def _create_users(self) -> dict[str, User]:
         user_data = {
             "admin": {
-                "email": "admin@myemail.com",
+                "email": "admin@example.com",
                 "first_name": "Admin",
                 "last_name": "User",
                 "password": "admin12345",
             },
             "manager": {
-                "email": "manager@myemail.com",
+                "email": "manager@example.com",
                 "first_name": "Manager",
                 "last_name": "User",
                 "password": "manager12345",
             },
             "user": {
-                "email": "user@myemail.com",
+                "email": "user@example.com",
                 "first_name": "Regular",
                 "last_name": "User",
                 "password": "user12345",
