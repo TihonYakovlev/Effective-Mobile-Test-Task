@@ -4,16 +4,22 @@ from apps.users.jwt import create_access_token
 from apps.users.models import AuthSession, User
 from apps.users.passwords import check_password, hash_password
 from rest_framework.exceptions import AuthenticationFailed
+from apps.access.models import Role, UserRole
 
 @transaction.atomic
 def register_user(validated_data: dict) -> User:
     password = validated_data.pop("password")
     validated_data.pop("password_repeat", None)
-
     user = User.objects.create(
         **validated_data,
         password_hash=hash_password(password),
     )
+    default_role, _ = Role.objects.get_or_create(
+        code="user",
+        defaults={"name": "User", "description": "Default registered user"},
+    )
+    UserRole.objects.create(user=user, role=default_role)
+    
     return user
 
 
