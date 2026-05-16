@@ -1,5 +1,6 @@
 from django.utils import timezone
 from rest_framework import status
+from rest_framework.exceptions import AuthenticationFailed
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -52,7 +53,15 @@ class LoginView(APIView):
     def post(self, request):
         serializer = LoginSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        token = login_user(**serializer.validated_data)
+
+        try:
+            token = login_user(**serializer.validated_data)
+        except AuthenticationFailed as error:
+            return Response(
+                {"detail": str(error.detail)},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
+
         return Response({"access_token": token, "token_type": "Bearer"})
 
 
